@@ -26,10 +26,17 @@ class Utility {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getPaymentProviders() {
-        $query = "SELECT provider_id, provider_name FROM payment_provider ORDER BY provider_name ASC";
-        $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+    public function getPaymentProviders($methodId = null) {
+        if ($methodId) {
+            $query = "SELECT provider_id, provider_name FROM payment_provider 
+                    WHERE method_id = ? ORDER BY provider_name ASC";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute([$methodId]);
+        } else {
+            $query = "SELECT provider_id, provider_name FROM payment_provider ORDER BY provider_name ASC";
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+        }
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 

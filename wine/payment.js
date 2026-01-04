@@ -36,21 +36,31 @@ function loadPaymentMethods() {
     });
 }
 
-function loadPaymentProviders() {
-    fetch("../api/payment_api.php?fetch_providers=true")
+document.getElementById("payment_method_id").addEventListener("change", function() {
+    const selectedMethodId = this.value;
+    loadPaymentProviders(selectedMethodId);
+});
+
+function loadPaymentProviders(methodId = null) {
+    const providerDropdown = document.getElementById("payment_provider_id");
+    
+    // If no method is selected, clear the providers
+    if (!methodId) {
+        providerDropdown.innerHTML = '<option value="">Select Method First</option>';
+        return;
+    }
+
+    fetch(`../api/payment_api.php?fetch_providers=true&method_id=${methodId}`)
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
-            const dropdown = document.getElementById("payment_provider_id");
-            if (dropdown) {
-                dropdown.innerHTML = '<option value="">Select Payment Provider</option>';
-                data.providers.forEach(provider => {
-                    let option = document.createElement("option");
-                    option.value = provider.provider_id;
-                    option.textContent = provider.provider_name;
-                    dropdown.appendChild(option);
-                });
-            }
+            providerDropdown.innerHTML = '<option value="">Select Payment Provider</option>';
+            data.providers.forEach(provider => {
+                let option = document.createElement("option");
+                option.value = provider.provider_id;
+                option.textContent = provider.provider_name;
+                providerDropdown.appendChild(option);
+            });
         }
     });
 }
@@ -92,7 +102,7 @@ function processPayment() {
         if (data.status === "success") {
             alert("Order updated successfully!");
             localStorage.clear();
-            window.location.href = "receipt.php";
+            window.location.href = "../user/my_orders.php";
         } else {
             alert("Payment failed: " + (data.message || ""));
         }

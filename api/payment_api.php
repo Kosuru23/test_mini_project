@@ -17,10 +17,14 @@ switch ($method) {
             echo json_encode(["status" => "success", "methods" => $utility->getPaymentMethods()]);
         } 
         elseif (isset($_GET['fetch_providers'])) {
-            echo json_encode(["status" => "success", "providers" => $utility->getPaymentProviders()]);
+            // Check if a specific method_id was passed
+            $methodId = isset($_GET['method_id']) ? $_GET['method_id'] : null;
+            echo json_encode([
+                "status" => "success", 
+                "providers" => $utility->getPaymentProviders($methodId)
+            ]);
         } 
         break;
-
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
         // Delegate all processing logic to the Payment class
