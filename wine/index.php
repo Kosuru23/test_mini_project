@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Management Information System</title>
     <link rel="stylesheet" href="../style/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="../javascript/functions.js"></script>
 </head>
 <body>
@@ -78,7 +80,7 @@
                     <label for="new_wine_type">Type Name:</label>
                     <input type="text" id="new_wine_type" placeholder="e.g., Sparkling Red">
                 </div>
-                <button onclick="saveCategory('wine_type')">Save Type</button>
+                <button onclick="saveCategory('wine_type')" class="add-btn">Save Type</button>
             </div>
         </div>
 
@@ -90,7 +92,7 @@
                     <label for="new_country_name">Country Name:</label>
                     <input type="text" id="new_country_name" placeholder="e.g., Spain">
                 </div>
-                <button onclick="saveCategory('country')">Save Country</button>
+                <button onclick="saveCategory('country')" class="add-btn">Save Country</button>
             </div>
         </div>
 
@@ -102,11 +104,11 @@
                     <label for="new_grape_variety">Grape Variety:</label>
                     <input type="text" id="new_variety_name" placeholder="e.g., Tempranillo">
                 </div>
-                <button onclick="saveCategory('grape_variety')">Save Variety</button>
+                <button onclick="saveCategory('grape_variety')" class="add-btn">Save Variety</button>
             </div>
         </div>
 
-        <table>
+        <table class="data-table">
             <thead>
                 <tr>
                     <th>No.</th>

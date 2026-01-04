@@ -133,3 +133,50 @@
     cursor: not-allowed;
     opacity: 0.5;
 }
+
+/* Update in style/shop.css */
+.wine-grid {
+    gap: 40px; /* Increased breathing room */
+}
+
+.wine-card {
+    border: none; /* Remove borders for a cleaner look */
+    background: #ffffff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+}
+
+.wine-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.wine-image img {
+    height: 300px; /* Taller images for better bottle display */
+    transition: var(--transition);
+}
+
+.wine-info {
+    padding: 24px;
+}
+
+.wine-price {
+    font-size: 1.4rem;
+    color: var(--primary-wine);
+    font-weight: 700;
+}
+
+.buy-btn {
+    background: var(--primary-wine);
+    border-radius: 8px; /* Slightly less rounded for a professional look */
+    padding: 12px 24px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.buy-btn:hover {
+    background: #4a0e12;
+    transform: scale(1.02);
+}
+

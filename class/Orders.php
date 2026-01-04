@@ -87,13 +87,15 @@ class Order {
     public function getUserOrders($buyer_id) {
         // We select payment_method from orders and address from shipping to check status
         $sql = "SELECT o.order_id, o.total_amount, o.created_at, o.order_status, o.payment_method,
-                    os.status_name, 
-                    sh.address, sh.city, sh.postal_code, sh.country, sh.tracking_number 
-                FROM orders o 
-                JOIN order_status os ON o.order_status = os.status_id 
-                LEFT JOIN shipping sh ON o.order_id = sh.order_id 
-                WHERE o.buyer_id = ? 
-                ORDER BY o.created_at DESC";
+                os.status_name, 
+                sh.address, sh.city, sh.postal_code, sh.country, sh.tracking_number,
+                -- SUBQUERY: Get the total count of items for this specific order
+                (SELECT SUM(quantity) FROM order_items WHERE order_id = o.order_id) as total_bottles
+            FROM orders o 
+            JOIN order_status os ON o.order_status = os.status_id 
+            LEFT JOIN shipping sh ON o.order_id = sh.order_id 
+            WHERE o.buyer_id = ? 
+            ORDER BY o.created_at DESC";
         $stmt = $this->conn->prepare($sql);
         $stmt->execute([$buyer_id]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

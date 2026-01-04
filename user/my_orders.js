@@ -33,9 +33,8 @@ function createOrderCard(order) {
     const total = parseFloat(order.total_amount).toFixed(2);
     const date = new Date(order.created_at).toLocaleDateString();
     const transactionNo = order.tracking_number ? order.tracking_number : "NOT ASSIGNED";
+    const bottleCount = order.total_bottles || 0;
 
-    // Determine if we need to "Set" or "Edit"
-    // If address is null, the user hasn't completed the payment/shipping phase
     const needsSetup = !order.address; 
 
     let actionButtons = "";
@@ -67,7 +66,11 @@ function createOrderCard(order) {
             <span class="status-badge status-${order.status_name.toLowerCase()}">${order.status_name}</span>
         </div>
         <div class="order-body">
-            <p><strong>Date:</strong> ${date} | <strong>Total:</strong> $${total}</p>
+            <p>
+                <strong>Date:</strong> ${date} | 
+                <strong>Bottles:</strong> ${bottleCount} | 
+                <strong>Total:</strong> $${total}
+            </p>
             <hr>
             ${needsSetup ? 
                 `<p style="color: #d9534f;"><i>Details missing. Please complete your order.</i></p>` : 
