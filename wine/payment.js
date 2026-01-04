@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
     initializePaymentPage();
-    loadPaymentMethods();   // Like loadCountryDropdowns()
-    loadPaymentProviders(); // Like loadWinetypeDropdowns()
-    loadPaymentStatuses();  // Like loadGrapeVarietyDropdowns()
+    loadPaymentMethods();
+    loadPaymentProviders();
 });
 
 function initializePaymentPage() {
@@ -18,27 +17,21 @@ function initializePaymentPage() {
     document.getElementById("displayTotal").innerText = `$${parseFloat(totalAmount).toFixed(2)}`;
 }
 
-// Dynamic Loader for Payment Methods
 function loadPaymentMethods() {
     fetch("../api/payment_api.php?fetch_methods=true")
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
-            // Updated IDs to match the HTML corrections above
-            const selectors = ["payment_method_id", "editMethodId"]; 
-            
-            selectors.forEach(id => {
-                let dropdown = document.getElementById(id);
-                if (dropdown) {
-                    dropdown.innerHTML = '<option value="">Select Payment Method</option>';
-                    data.methods.forEach(method => {
-                        let option = document.createElement("option");
-                        option.value = method.method_id;
-                        option.textContent = method.method_name;
-                        dropdown.appendChild(option);
-                    });
-                }
-            });
+            const dropdown = document.getElementById("payment_method_id");
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Select Payment Method</option>';
+                data.methods.forEach(method => {
+                    let option = document.createElement("option");
+                    option.value = method.method_id;
+                    option.textContent = method.method_name;
+                    dropdown.appendChild(option);
+                });
+            }
         }
     });
 }
@@ -48,41 +41,34 @@ function loadPaymentProviders() {
     .then(response => response.json())
     .then(data => {
         if (data.status === "success") {
-            // Updated IDs to match the HTML corrections above
-            const selectors = ["payment_provider_id", "editProviderId"]; 
-            
-            selectors.forEach(id => {
-                let dropdown = document.getElementById(id);
-                if (dropdown) {
-                    dropdown.innerHTML = '<option value="">Select Payment Provider</option>';
-                    data.providers.forEach(provider => {
-                        let option = document.createElement("option");
-                        option.value = provider.provider_id;
-                        option.textContent = provider.provider_name;
-                        dropdown.appendChild(option);
-                    });
-                }
-            });
+            const dropdown = document.getElementById("payment_provider_id");
+            if (dropdown) {
+                dropdown.innerHTML = '<option value="">Select Payment Provider</option>';
+                data.providers.forEach(provider => {
+                    let option = document.createElement("option");
+                    option.value = provider.provider_id;
+                    option.textContent = provider.provider_name;
+                    dropdown.appendChild(option);
+                });
+            }
         }
     });
 }
 
 function processPayment() {
-    // Validation similar to addWine()
     const method = document.getElementById("payment_method_id").value;
     const provider = document.getElementById("payment_provider_id").value;
-    const status = document.getElementById("payment_status_id").value;
 
-    if (!method || !provider || !status) {
+    if (!method || !provider) {
         alert("Please select all options.");
         return;
     }
 
     const paymentData = {
         order_id: localStorage.getItem("current_order_id"),
-        payment_method: method,
-        payment_provider: provider,
-        payment_status: status
+        payment_method: parseInt(method),
+        payment_provider: parseInt(provider)
+        // Do NOT send payment_status; server will decide it
     };
 
     fetch("../api/payment_api.php", {
@@ -96,16 +82,17 @@ function processPayment() {
             alert("Order updated successfully!");
             localStorage.clear();
             window.location.href = "receipt.php";
+        } else {
+            alert("Payment failed: " + (data.message || ""));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert("Payment request failed.");
     });
 }
 
 document.getElementById("paymentForm").addEventListener("submit", (e) => {
     e.preventDefault();
     processPayment();
-});
-
-document.addEventListener("DOMContentLoaded", () => {
-    initializeSummary();
-    loadDropdowns();
 });

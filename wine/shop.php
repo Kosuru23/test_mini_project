@@ -19,9 +19,6 @@
             <div class="logo">Fine Wine Estates</div>
             <ul class="menu">
                 <li><a href="shop.php">Shop All</a></li>
-                <li><a href="#">Red Wines</a></li>
-                <li><a href="#">White Wines</a></li>
-                <li><a href="#">Cart (0)</a></li>
                 <li><a href="../api/user_api/logout.php">Logout</a></li>
             </ul>
         </div>

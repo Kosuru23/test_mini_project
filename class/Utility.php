@@ -39,5 +39,12 @@ class Utility {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function getPaymentStatuses() {
+        $query = "SELECT status_id, status_name FROM payment_status ORDER BY status_name ASC";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 }
 ?>

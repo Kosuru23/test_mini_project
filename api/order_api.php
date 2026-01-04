@@ -19,15 +19,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $db = $database->getConnection();
         $order = new Order($db);
 
-        // Map session 'user_id' to database 'buyer_id'
-        $payment_method = isset($data['payment_method']) ? (int)$data['payment_method'] : 5;
+        // Defensive: if payment_method is missing or 0, use 5 (Cash on Delivery) which exists in DB
+        $payment_method = isset($data['payment_method']) && (int)$data['payment_method'] > 0 ? (int)$data['payment_method'] : 5;
 
-        // Pass $payment_method to your Order class
+        // order_status: default to Pending (1)
+        $order_status = isset($data['order_status']) ? (int)$data['order_status'] : 1;
+
         $result = $order->placeOrder(
-            $_SESSION['user_id'], 
-            $data['total_amount'], 
-            $payment_method, 
-            $data['items']
+            $_SESSION['user_id'],
+            $data['total_amount'],
+            $payment_method,
+            $data['items'],
+            $order_status
         );
         echo json_encode($result);
     } else {

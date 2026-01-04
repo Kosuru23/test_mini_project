@@ -99,7 +99,8 @@ function checkout() {
     const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     const orderData = {
         total_amount: total,      // Maps to DB column
-        payment_method: 5,        // Cash on Delivery
+        payment_method: 5,        // Use existing method id (5 = Cash on Delivery) to satisfy FK
+        order_status: 1,          // 1 = Pending (created as pending until payment is confirmed)
         items: cart 
     };
 
@@ -115,32 +116,39 @@ function checkout() {
             localStorage.setItem("current_order_id", data.order_id);
             localStorage.setItem("current_order_total", total); 
             
-            alert("Order created! Redirecting to payment...");
+            alert("Order created and set PENDING. Redirecting to payment...");
             window.location.href = "payment.php"; 
+        } else {
+            alert("Order creation failed: " + (data.message || ""));
         }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Failed to create order.');
     });
 }
 
-// UI Helper Functions (Same as your provided logic)
+// UI Helper Functions
 function updateCartUI() {
     const count = cart.reduce((acc, item) => acc + item.quantity, 0);
     const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    document.getElementById("cartCount").innerText = `${count} Items`;
-    document.getElementById("cartTotal").innerText = `$${total.toFixed(2)}`;
+    const cartCountEl = document.getElementById("cartCount");
+    const cartTotalEl = document.getElementById("cartTotal");
+    if (cartCountEl) cartCountEl.innerText = `${count} Items`;
+    if (cartTotalEl) cartTotalEl.innerText = `$${total.toFixed(2)}`;
     const modalTotal = document.getElementById("modalTotal");
     if (modalTotal) modalTotal.innerText = `$${total.toFixed(2)}`;
 }
 
-function showFooter() { document.getElementById("cartFooter").style.display = "flex"; }
-function closeCartModal() { document.getElementById("cartModal").style.display = "none"; }
+function showFooter() { const el = document.getElementById("cartFooter"); if (el) el.style.display = "flex"; }
+function closeCartModal() { const el = document.getElementById("cartModal"); if (el) el.style.display = "none"; }
 function removeItem(index) {
     cart.splice(index, 1);
-    if (cart.length === 0) {
-        closeCartModal();
-        document.getElementById("cartFooter").style.display = "none";
-    }
     updateCartUI();
-    openCartModal();
+    if (cart.length === 0) {
+        const el = document.getElementById("cartFooter");
+        if (el) el.style.display = "none";
+    }
 }
 
 function openCartModal() {
