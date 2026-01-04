@@ -11,11 +11,11 @@
 <body>
     <div class="header">
         <div class="navbar">
-            <div class="logo">Management Information System</div>
+            <div class="logo">Wine Management System</div>
             <ul class="menu">
                 <li><a href="index.php">Wine</a></li>
                 <li><a href="admin_order.php">Orders</a></li>
-                <li><a href="create_account.php">Create Admin Account</a></li>
+                <li><a href="../user/create_account.php">Create Admin Account</a></li>
                 <li><a href="../api/user_api/logout.php">Logout</a></li>
             </ul>
         </div>
@@ -47,17 +47,63 @@
         </div>
         
         <div class="search-filter">
-            <input type="text" id="searchBox" placeholder="Search by Name..." onkeyup="filterEmployees()">
-            <select id="filterSex" onchange="filterEmployees()">
-                <option value="">Filter by Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
-            <select id="filterJobTitle" onchange="filterEmployees()">
-                <option value="">Select Job Title</option>
-                <option value="Project Manager">Project Manager</option>
-                <option value="Software Engineer">Software Engineer</option>
-            </select>
+            <input type="text" id="searchBox" placeholder="Search by Wine Name..." onkeyup="filterWines()">
+            
+            <select id="filterType" onchange="filterWines()">
+                <option value="">All Wine Types</option>
+                </select>
+            
+            <select id="filterVariety" onchange="filterWines()">
+                <option value="">All Varieties</option>
+                </select>
+
+            <select id="filterCountry" onchange="filterWines()">
+                <option value="">All Countries</option>
+                </select>
+            
+            <button class="add-btn" onclick="resetFilters()" style="background-color: #6c757d;">Reset</button>
+        </div>
+        
+        <div class="management-controls">
+            <button class="secondary-btn" onclick="openModal('addTypeModal')">+ Add Wine Type</button>
+            <button class="secondary-btn" onclick="openModal('addCountryModal')">+ Add Country</button>
+            <button class="secondary-btn" onclick="openModal('addVarietyModal')">+ Add Variety</button>
+        </div>
+
+        <div id="addTypeModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModalId('addTypeModal')">&times;</span>
+                <h3>Add New Wine Type</h3>
+                <div class="form-group">
+                    <label for="new_wine_type">Type Name:</label>
+                    <input type="text" id="new_wine_type" placeholder="e.g., Sparkling Red">
+                </div>
+                <button onclick="saveCategory('wine_type')">Save Type</button>
+            </div>
+        </div>
+
+        <div id="addCountryModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModalId('addCountryModal')">&times;</span>
+                <h3>Add New Country</h3>
+                <div class="form-group">
+                    <label for="new_country_name">Country Name:</label>
+                    <input type="text" id="new_country_name" placeholder="e.g., Spain">
+                </div>
+                <button onclick="saveCategory('country')">Save Country</button>
+            </div>
+        </div>
+
+        <div id="addVarietyModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModalId('addVarietyModal')">&times;</span>
+                <h3>Add New Grape Variety</h3>
+                <div class="form-group">
+                    <label for="new_grape_variety">Grape Variety:</label>
+                    <input type="text" id="new_variety_name" placeholder="e.g., Tempranillo">
+                </div>
+                <button onclick="saveCategory('grape_variety')">Save Variety</button>
+            </div>
         </div>
 
         <table>
@@ -90,16 +136,43 @@
             <span class="close" onclick="closeAddWineModal()">&times;</span>
             <h3>Enter Wine Details</h3>
             <div class="form-grid">
-                <input type="text" id="wine_name" placeholder="Wine Name">
-                <select id="wine_type_id"></select>
-                <select id="grape_variety_id"></select>
-                <input type="text" id="region" placeholder="Region">
-                <select id="wine_country_id"></select>
-                <input type="number" step="0.1" id="alcohol_percentage" placeholder="Alcohol %">
-                <input type="number" id="quantity" placeholder="Quantity">
-                <input type="number" id="price" placeholder="Price">
-                <input type="text" id="description" placeholder="Description">
-                <div style="grid-column: span 2;">
+                <div class="form-group">
+                    <label for="wine_name">Wine Name:</label>
+                    <input type="text" id="wine_name" placeholder="Enter wine name">
+                </div>
+                <div class="form-group">
+                    <label for="wine_type_id">Wine Type:</label>
+                    <select id="wine_type_id"></select>
+                </div>
+                <div class="form-group">
+                    <label for="grape_variety_id">Grape Variety:</label>
+                    <select id="grape_variety_id"></select>
+                </div>
+                <div class="form-group">
+                    <label for="region">Region:</label>
+                    <input type="text" id="region" placeholder="Enter region">
+                </div>
+                <div class="form-group">
+                    <label for="wine_country_id">Country:</label>
+                    <select id="wine_country_id"></select>
+                </div>
+                <div class="form-group">
+                    <label for="alcohol_percentage">Alcohol %:</label>
+                    <input type="number" step="0.1" id="alcohol_percentage" placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" id="quantity" placeholder="0">
+                </div>
+                <div class="form-group">
+                    <label for="price">Price ($):</label>
+                    <input type="number" id="price" placeholder="0.00">
+                </div>
+                <div class="form-group full-width">
+                    <label for="description">Description:</label>
+                    <textarea id="description" placeholder="Enter wine description"></textarea>
+                </div>
+                <div class="form-group full-width">
                     <label for="wine_image">Wine Photo:</label>
                     <input type="file" id="wine_image" accept="image/*">
                 </div>
@@ -111,23 +184,51 @@
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
-            <h3>Update Wine</h3>
+            <h3>Update Wine Information</h3>
+            
             <input type="hidden" id="editId">
+            <input type="hidden" id="editImageUrl"> 
+
             <div class="form-grid">
-                <input type="text" id="editWineName" placeholder="Wine Name">
-                <select id="editTypeId"></select>
-                <select id="editVarietyId"></select>
-                <input type="text" id="editRegion" placeholder="Region">
-                <select id="editCountryId"></select>
-                <input type="number" step="0.1" id="editAlcohol" placeholder="Alcohol %">
-                <input type="number" id="editQuantity" placeholder="Quantity">
-                <input type="number" id="editPrice" placeholder="Price">
-                <input type="text" id="editDescription" placeholder="Description">
+                <div class="form-group">
+                    <label for="editWineName">Wine Name:</label>
+                    <input type="text" id="editWineName" placeholder="Wine Name">
+                </div>
+                <div class="form-group">
+                    <label for="editTypeId">Wine Type:</label>
+                    <select id="editTypeId"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editVarietyId">Grape Variety:</label>
+                    <select id="editVarietyId"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editRegion">Region:</label>
+                    <input type="text" id="editRegion" placeholder="Region">
+                </div>
+                <div class="form-group">
+                    <label for="editCountryId">Country:</label>
+                    <select id="editCountryId"></select>
+                </div>
+                <div class="form-group">
+                    <label for="editAlcohol">Alcohol %:</label>
+                    <input type="number" step="0.1" id="editAlcohol" placeholder="Alcohol %">
+                </div>
+                <div class="form-group">
+                    <label for="editQuantity">Current Stock:</label>
+                    <input type="number" id="editQuantity" placeholder="Quantity">
+                </div>
+                <div class="form-group">
+                    <label for="editPrice">Unit Price ($):</label>
+                    <input type="number" id="editPrice" placeholder="Price">
+                </div>
+                <div class="form-group full-width">
+                    <label for="editDescription">Product Description:</label>
+                    <textarea id="editDescription" placeholder="Description"></textarea>
+                </div>
                 
-                <input type="hidden" id="editImageUrl"> 
-                
-                <div style="grid-column: span 2;">
-                    <label>Change Wine Photo (Optional):</label>
+                <div class="form-group full-width">
+                    <label for="editImageFile">Update Wine Photo (Leave blank to keep current):</label>
                     <input type="file" id="editImageFile" accept="image/*">
                 </div>
             </div>

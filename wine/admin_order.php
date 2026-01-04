@@ -9,11 +9,11 @@
 <body>
     <div class="header">
         <div class="navbar">
-            <div class="logo">Wine MIS Admin</div>
+            <div class="logo">Wine Management System</div>
             <ul class="menu">
                 <li><a href="index.php">Wine</a></li>
                 <li><a href="admin_order.php" class="active">Orders</a></li>
-                <li><a href="create_account.php">Create Admin Account</a></li>
+                <li><a href="../user/create_account.php">Create Admin Account</a></li>
                 <li><a href="../api/user_api/logout.php">Logout</a></li>
             </ul>
         </div>

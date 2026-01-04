@@ -295,3 +295,135 @@ button {
 .status-delivered { background-color: #dcfce7; color: #166534; }  /* ID 4 */
 .status-cancelled { background-color: #fee2e2; color: #991b1b; }  /* ID 5 */
 .status-refunded { background-color: #f1f5f9; color: #475569; }   /* ID 6 */
+
+.modal h3 {
+    margin-top: 0;
+    color: #722f37; /* Wine Red */
+    border-bottom: 2px solid #f4f4f4;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Two columns */
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Make wide elements span both columns */
+.form-grid input[type="text"], 
+.form-grid select, 
+.form-grid input[type="number"],
+.form-grid textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box; /* Ensures padding doesn't affect width */
+}
+
+.form-grid input:focus, .form-grid select:focus {
+    outline: none;
+    border-color: #722f37;
+    box-shadow: 0 0 5px rgba(114, 47, 55, 0.2);
+}
+
+/* Styling for the small category modals (Type, Country, Variety) */
+#addTypeModal .modal-content, 
+#addCountryModal .modal-content, 
+#addVarietyModal .modal-content {
+    max-width: 400px;
+    padding: 25px;
+}
+
+.modal input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 16px;
+    box-sizing: border-box; /* Crucial for full-width */
+}
+
+/* Primary Save Button */
+.modal button {
+    width: 100%;
+    padding: 12px;
+    background-color: #722f37; /* Wine Red */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.modal button:hover {
+    background-color: #5a252c;
+}
+
+/* Management Buttons (below stats) */
+.management-controls {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.secondary-btn {
+    background-color: #6c757d;
+    color: white;
+    padding: 8px 15px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.secondary-btn:hover {
+    background-color: #5a6268;
+}
+
+/* Label Styling */
+.form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #444;
+    font-size: 14px;
+    text-align: left; /* Ensures labels align with inputs */
+}
+
+/* Individual Form Group */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Make specific groups span both columns */
+.full-width {
+    grid-column: span 2;
+}
+
+/* Style for textareas (Description) */
+textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-height: 80px;
+    font-family: inherit;
+    resize: vertical;
+}
+
+/* File input spacing */
+input[type="file"] {
+    border: none;
+    padding: 5px 0;
+}

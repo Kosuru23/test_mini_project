@@ -63,6 +63,20 @@ switch ($method) {
         $quantity = $_POST['quantity'] ?? 0;
         $price = $_POST['price'] ?? 0;
         $desc = $_POST['description'] ?? '';
+        $action = $_POST['action'] ?? '';
+
+        if ($action === 'add_category') {
+            $category_type = $_POST['category_type'] ?? '';
+            $name = $_POST['name'] ?? '';
+            $result = false;
+
+            if ($category_type === 'country') $result = $utility->addCountry($name);
+            elseif ($category_type === 'wine_type') $result = $utility->addWineType($name);
+            elseif ($category_type === 'grape_variety') $result = $utility->addGrapeVariety($name);
+
+            echo json_encode(["status" => $result ? "success" : "error", "message" => $result ? "Category added" : "Failed to add category"]);
+            break;
+        }
         
         // Start with the existing image if updating, or default if new
         $image_url = $_POST['existing_image'] ?? 'default.png'; 

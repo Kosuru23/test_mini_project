@@ -55,5 +55,20 @@ class Utility {
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function addCountry($name) {
+        $query = "INSERT INTO country (name) VALUES (?)";
+        return $this->conn->prepare($query)->execute([$name]);
+    }
+
+    public function addWineType($name) {
+        $query = "INSERT INTO wine_type (wine_type_name) VALUES (?)";
+        return $this->conn->prepare($query)->execute([$name]);
+    }
+
+    public function addGrapeVariety($name) {
+        $query = "INSERT INTO grape_variety (variety_name) VALUES (?)";
+        return $this->conn->prepare($query)->execute([$name]);
+    }
 }
 ?>
