@@ -1,54 +1,87 @@
 document.addEventListener("DOMContentLoaded", () => {
+    loadDashboardStats();
     loadWines();            // Load the table
     loadCountryDropdowns(); // Populate the selectors
     loadWinetypeDropdowns();
     loadGrapeVarietyDropdowns();
 });
 
+let allWines = [];
+let currentPage = 1;
+const rowsPerPage = 10;
+
 function loadWines() {
     fetch("../api/wine_api.php")
     .then(response => response.json())
     .then(data => {
-        let wineTableBody = document.getElementById("wineTableBody");
-        wineTableBody.innerHTML = "";
         if (data.status === "success") {
-            data.wine.forEach(wine => {
-                let imageTag = wine.image_url 
-                    ? `<img src="../uploads/${wine.image_url}" width="200" style="border-radius:4px;">` 
-                    : `<span>No Image</span>`;
-
-                wineTableBody.innerHTML += `
-                <tr>
-                    <td>${wine.wine_id}</td>
-                    <td>${imageTag}</td> 
-                    <td>${wine.wine_name}</td>
-                    <td>${wine.wine_type_name}</td>
-                    <td>${wine.variety_name}</td>
-                    <td>${wine.region}</td>
-                    <td>${wine.name}</td> 
-                    <td>${wine.alcohol_percentage}%</td>
-                    <td>${wine.quantity}</td>
-                    <td>${wine.price}</td>
-                    <td class="actions">
-                        <button class="edit-btn" onclick="openEditModal(
-                            ${wine.wine_id}, 
-                            '${wine.wine_name}', 
-                            ${wine.wine_type_id}, 
-                            ${wine.grape_variety_id}, 
-                            '${wine.region}', 
-                            ${wine.country_id}, 
-                            '${wine.alcohol_percentage}', 
-                            '${wine.quantity}', 
-                            '${wine.price}', 
-                            '${wine.description}', 
-                            '${wine.image_url}'
-                        )">Edit</button>
-                        <button class="delete-btn" onclick="deleteWine(${wine.wine_id})">Delete</button>
-                    </td>
-                </tr>`;
-            });
+            // 2. Store all data globally so we don't have to fetch again for every page
+            allWines = data.wine;
+            renderTable();
         }
     });
+}
+
+function renderTable() {
+let wineTableBody = document.getElementById("wineTableBody");
+wineTableBody.innerHTML = "";
+
+// 3. Calculate start and end indices for the current page
+const startIndex = (currentPage - 1) * rowsPerPage;
+const endIndex = startIndex + rowsPerPage;
+const paginatedWines = allWines.slice(startIndex, endIndex);
+
+// 4. Loop through only the 10 wines for this page
+paginatedWines.forEach((wine, index) => {
+    // Calculate the actual row number (e.g., Row 11 on Page 2)
+    const displayIndex = startIndex + index + 1;
+
+    let imageTag = wine.image_url 
+        ? `<img src="../uploads/${wine.image_url}" width="200" style="border-radius:4px;">` 
+        : `<span>No Image</span>`;
+
+    wineTableBody.innerHTML += `
+    <tr>
+        <td>${displayIndex}</td>
+        <td>${imageTag}</td> 
+        <td>${wine.wine_name}</td>
+        <td>${wine.wine_type_name}</td>
+        <td>${wine.variety_name}</td>
+        <td>${wine.region}</td>
+        <td>${wine.name}</td> 
+        <td>${wine.alcohol_percentage}%</td>
+        <td>${wine.quantity}</td>
+        <td>${wine.price}</td>
+        <td class="actions">
+            <button class="edit-btn" onclick="openEditModal(
+                ${wine.wine_id}, '${wine.wine_name}', ${wine.wine_type_id}, 
+                ${wine.grape_variety_id}, '${wine.region}', ${wine.country_id}, 
+                '${wine.alcohol_percentage}', '${wine.quantity}', '${wine.price}', 
+                '${wine.description}', '${wine.image_url}'
+            )">Edit</button>
+            <button class="delete-btn" onclick="deleteWine(${wine.wine_id})">Delete</button>
+        </td>
+    </tr>`;
+});
+
+updatePaginationControls();
+}
+
+function updatePaginationControls() {
+const totalPages = Math.ceil(allWines.length / rowsPerPage);
+document.getElementById("pageInfo").innerText = `Page ${currentPage} of ${totalPages || 1}`;
+
+// Disable buttons if at the start or end
+document.getElementById("prevBtn").disabled = (currentPage === 1);
+document.getElementById("nextBtn").disabled = (currentPage === totalPages || totalPages === 0);
+}
+
+function changePage(newPage) {
+const totalPages = Math.ceil(allWines.length / rowsPerPage);
+if (newPage < 1 || newPage > totalPages) return;
+
+currentPage = newPage;
+renderTable();
 }
 
 function loadCountryDropdowns() {
@@ -273,4 +306,18 @@ function closeAddWineModal() {
 
 function closeModal() {
     document.getElementById("editModal").style.display = "none";
+}
+
+function loadDashboardStats() {
+    fetch('../api/dashboard.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === "success") {
+                document.getElementById('stat-total-wines').innerText = data.stats.total_wines;
+                document.getElementById('stat-total-revenue').innerText = "$" + data.stats.total_revenue;
+                document.getElementById('stat-low-stock').innerText = data.stats.low_stock;
+                document.getElementById('stat-total-orders').innerText = data.stats.total_orders;
+            }
+        })
+        .catch(error => console.error('Error fetching stats:', error));
 }

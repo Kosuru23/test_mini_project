@@ -1,3 +1,4 @@
+<?php include '../api/auth_checker/admin_check.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,17 +13,12 @@
         <div class="navbar">
             <div class="logo">Management Information System</div>
             <ul class="menu">
-                <li><a href="#">Departments</a></li>
-                <li><a href="../employees/">Wine</a></li>
-                <li><a href="#">Products</a></li>
-                <li><a href="#">Orders</a></li>
+                <li><a href="index.php">Wine</a></li>
+                <li><a href="admin_order.php">Orders</a></li>
+                <li><a href="create_account.php">Create Admin Account</a></li>
                 <li><a href="../api/user_api/logout.php">Logout</a></li>
             </ul>
         </div>
-    </div>
-
-    <div class="status-container">
-        Database Connection Status: <span class="status success">Connected Successfully</span>
     </div>
 
     <div class="container">
@@ -31,6 +27,25 @@
             <button class="add-btn" onclick="openAddWineModal()">Add Wine</button>
         </div>
 
+        <div class="dashboard-stats">
+            <div class="stat-card">
+                <h3>Total Wines</h3>
+                <p id="stat-total-wines">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Revenue</h3>
+                <p id="stat-total-revenue">$0.00</p>
+            </div>
+            <div class="stat-card danger">
+                <h3>Low Stock Alerts</h3>
+                <p id="stat-low-stock">0</p>
+            </div>
+            <div class="stat-card">
+                <h3>Total Orders</h3>
+                <p id="stat-total-orders">0</p>
+            </div>
+        </div>
+        
         <div class="search-filter">
             <input type="text" id="searchBox" placeholder="Search by Name..." onkeyup="filterEmployees()">
             <select id="filterSex" onchange="filterEmployees()">
@@ -48,7 +63,7 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th>
+                    <th>No.</th>
                     <th>Wine Image</th>
                     <th>Wine Name</th>
                     <th>Type</th>
@@ -63,6 +78,12 @@
             </thead>
             <tbody id="wineTableBody"></tbody>
         </table>
+
+        <div class="pagination-container">
+            <button id="prevBtn" onclick="changePage(currentPage - 1)">Previous</button>
+            <span id="pageInfo"></span>
+            <button id="nextBtn" onclick="changePage(currentPage + 1)">Next</button>
+        </div>
 
     <div id="addWineModal" class="modal">
         <div class="modal-content">

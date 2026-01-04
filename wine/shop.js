@@ -1,56 +1,200 @@
 // 1. Global state management
 let cart = [];
-let allWinesData = []; // Essential for stock validation
+let allWinesData = []; 
+let currentPage = 1;
+const itemsPerPage = 9;
 
-document.addEventListener("DOMContentLoaded", fetchShopWines);
+document.addEventListener("DOMContentLoaded", () => {
+    fetch("../api/wine_api.php")
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            allWinesData = data.wine;
+            filterShop(); 
+        }
+    });
+
+    // Populate filter dropdowns
+    const configs = [
+        { id: 'filterCountry', param: 'fetch_countries', key: 'countries', label: 'name' },
+        { id: 'filterType', param: 'fetch_wine_type', key: 'wine_types', label: 'wine_type_name' },
+        { id: 'filterVariety', param: 'fetch_grape_variety', key: 'grape_varieties', label: 'variety_name' }
+    ];
+
+    configs.forEach(cfg => {
+        fetch(`../api/wine_api.php?${cfg.param}`)
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById(cfg.id);
+                if (data.status === "success") {
+                    data[cfg.key].forEach(item => {
+                        let opt = document.createElement("option");
+                        opt.value = item[cfg.label];
+                        opt.innerText = item[cfg.label];
+                        select.appendChild(opt);
+                    });
+                }
+            });
+    });
+});
 
 function fetchShopWines() {
     fetch("../api/wine_api.php")
     .then(response => response.json())
     .then(data => {
-        const wineGrid = document.getElementById("wineGrid");
-        wineGrid.innerHTML = "";
-
         if (data.status === "success") {
-            // CRITICAL: Store the wine data globally for use in addToCart and updateQty
-            allWinesData = data.wine; 
-
-            data.wine.forEach(wine => {
-                const imgSrc = wine.image_url ? `../uploads/${wine.image_url}` : '../images/placeholder.png';
-                const shortDesc = wine.description && wine.description.length > 100 
-                    ? wine.description.substring(0, 100) + "..." 
-                    : (wine.description || "No description available.");
-
-                wineGrid.innerHTML += `
-                <div class="wine-card">
-                    <div class="wine-image">
-                        <img src="${imgSrc}" alt="${wine.wine_name}">
-                        <div class="alcohol-badge">${wine.alcohol_percentage}% ABV</div>
-                    </div>
-                    <div class="wine-info">
-                        <span class="wine-category">${wine.wine_type_name}</span>
-                        <h3>${wine.wine_name}</h3>
-                        <p class="wine-variety">${wine.variety_name} | ${wine.name}</p>
-                        <p class="wine-description">${shortDesc}</p>
-                        <div class="wine-footer">
-                            <div class="pricing">
-                                <span class="wine-price">$${parseFloat(wine.price).toFixed(2)}</span>
-                                <span class="stock-count ${wine.quantity <= 0 ? 'out' : ''}">
-                                    ${wine.quantity > 0 ? wine.quantity + ' in stock' : 'Out of Stock'}
-                                </span>
-                            </div>
-                            <button class="buy-btn" 
-                                ${wine.quantity <= 0 ? 'disabled' : ''} 
-                                onclick="addToCart(${wine.wine_id}, '${wine.wine_name.replace(/'/g, "\\'")}', ${wine.price})">
-                                ${wine.quantity > 0 ? 'Add to Cart' : 'Sold Out'}
-                            </button>
-                        </div>
-                    </div>
-                </div>`;
-            });
+            allWinesData = data.wine; // Store globally
+            filterShop(); // Initial render
         }
     })
     .catch(error => console.error("Error fetching shop wines:", error));
+}
+
+function populateFilters() {
+    const endpoints = [
+        { id: 'filterCountry', param: 'fetch_countries', key: 'countries', textKey: 'name' },
+        { id: 'filterType', param: 'fetch_wine_type', key: 'wine_types', textKey: 'wine_type_name' },
+        { id: 'filterVariety', param: 'fetch_grape_variety', key: 'grape_varieties', textKey: 'variety_name' }
+    ];
+
+    endpoints.forEach(config => {
+        fetch(`../api/wine_api.php?${config.param}`)
+            .then(res => res.json())
+            .then(data => {
+                const select = document.getElementById(config.id);
+                if (data.status === "success") {
+                    data[config.key].forEach(item => {
+                        const option = new Option(item[config.textKey], item[config.textKey]);
+                        select.add(option);
+                    });
+                }
+            });
+    });
+}
+
+function filterShop(resetPage = true) {
+    // 1. Reset to page 1 if a filter or search was changed
+    if (resetPage) currentPage = 1;
+
+    // A. Capture all input values
+    const searchVal = document.getElementById("shopSearch").value.toLowerCase();
+    const countryVal = document.getElementById("filterCountry").value;
+    const typeVal = document.getElementById("filterType").value;
+    const varietyVal = document.getElementById("filterVariety").value;
+
+    const wineGrid = document.getElementById("wineGrid");
+    
+    // B. Filter the global data array
+    const filteredWines = allWinesData.filter(wine => {
+        const matchesSearch = wine.wine_name.toLowerCase().includes(searchVal) || 
+                              (wine.description && wine.description.toLowerCase().includes(searchVal));
+        const matchesCountry = countryVal === "" || wine.name === countryVal;
+        const matchesType = typeVal === "" || wine.wine_type_name === typeVal;
+        const matchesVariety = varietyVal === "" || wine.variety_name === varietyVal;
+
+        return matchesSearch && matchesCountry && matchesType && matchesVariety;
+    });
+
+    // C. PAGINATION CALCULATIONS
+    const totalPages = Math.ceil(filteredWines.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const paginatedWines = filteredWines.slice(startIndex, startIndex + itemsPerPage);
+
+    // D. Render the HTML for the current page only
+    wineGrid.innerHTML = ""; 
+    if (paginatedWines.length === 0) {
+        wineGrid.innerHTML = "<p>No wines match your criteria.</p>";
+    } else {
+        paginatedWines.forEach(wine => {
+            const imgSrc = wine.image_url ? `../uploads/${wine.image_url}` : '../images/placeholder.png';
+            const shortDesc = wine.description && wine.description.length > 100 
+                ? wine.description.substring(0, 100) + "..." 
+                : (wine.description || "No description available.");
+
+            wineGrid.innerHTML += `
+            <div class="wine-card">
+                <div class="wine-image">
+                    <img src="${imgSrc}" alt="${wine.wine_name}">
+                    <div class="alcohol-badge">${wine.alcohol_percentage}% ABV</div>
+                </div>
+                <div class="wine-info">
+                    <span class="wine-category">${wine.wine_type_name}</span>
+                    <h3>${wine.wine_name}</h3>
+                    <p class="wine-variety">${wine.variety_name} | ${wine.name}</p>
+                    <p class="wine-description">${shortDesc}</p>
+                    <div class="wine-footer">
+                        <div class="pricing">
+                            <span class="wine-price">$${parseFloat(wine.price).toFixed(2)}</span>
+                            <span class="stock-count ${wine.quantity <= 0 ? 'out' : ''}">
+                                ${wine.quantity > 0 ? wine.quantity + ' in stock' : 'Out of Stock'}
+                            </span>
+                        </div>
+                        <button class="buy-btn" 
+                            ${wine.quantity <= 0 ? 'disabled' : ''} 
+                            onclick="addToCart(${wine.wine_id}, '${wine.wine_name.replace(/'/g, "\\'")}', ${wine.price})">
+                            ${wine.quantity > 0 ? 'Add to Cart' : 'Sold Out'}
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+        });
+    }
+
+    // E. Render Pagination Controls (11 buttons centered)
+    const paginationEl = document.getElementById("paginationControls");
+    paginationEl.innerHTML = "";
+
+    if (totalPages > 1) {
+        let maxVisible = 11;
+        let startPage, endPage;
+
+        if (totalPages <= maxVisible) {
+            startPage = 1;
+            endPage = totalPages;
+        } else {
+            startPage = currentPage - 5;
+            endPage = currentPage + 5;
+
+            if (startPage < 1) {
+                startPage = 1;
+                endPage = maxVisible;
+            } else if (endPage > totalPages) {
+                endPage = totalPages;
+                startPage = totalPages - (maxVisible - 1);
+            }
+        }
+
+        // Previous Button
+        if (currentPage > 1) {
+            const prevBtn = document.createElement("button");
+            prevBtn.innerHTML = "&laquo;";
+            prevBtn.className = "page-btn";
+            prevBtn.onclick = () => { currentPage--; filterShop(false); window.scrollTo(0, 0); };
+            paginationEl.appendChild(prevBtn);
+        }
+
+        // Page Number Buttons
+        for (let i = startPage; i <= endPage; i++) {
+            const btn = document.createElement("button");
+            btn.innerText = i;
+            btn.className = (i === currentPage) ? "page-btn active" : "page-btn";
+            btn.onclick = () => {
+                currentPage = i;
+                filterShop(false); 
+                window.scrollTo(0, 0); 
+            };
+            paginationEl.appendChild(btn);
+        }
+
+        // Next Button
+        if (currentPage < totalPages) {
+            const nextBtn = document.createElement("button");
+            nextBtn.innerHTML = "&raquo;";
+            nextBtn.className = "page-btn";
+            nextBtn.onclick = () => { currentPage++; filterShop(false); window.scrollTo(0, 0); };
+            paginationEl.appendChild(nextBtn);
+        }
+    }
 }
 
 // 2. Cart Logic with Stock Checking

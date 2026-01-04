@@ -1,5 +1,4 @@
 <?php include '../api/auth_checker/auth_check.php'; ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -19,6 +18,7 @@
             <div class="logo">Fine Wine Estates</div>
             <ul class="menu">
                 <li><a href="shop.php">Shop All</a></li>
+                <li><a href="../user/my_orders.php">My Orders</a></li>
                 <li><a href="../api/user_api/logout.php">Logout</a></li>
             </ul>
         </div>
@@ -29,10 +29,29 @@
             <h1 class="page-title">Explore Our Collection</h1>
             <div class="search-filter">
                 <input type="text" id="shopSearch" placeholder="Find a wine..." onkeyup="filterShop()">
+                
+                <div class="filter-controls" style="display: flex; gap: 10px; margin-top: 10px;">
+                    <select id="filterCountry" onchange="filterShop()">
+                        <option value="">All Countries</option>
+                    </select>
+                    
+                    <select id="filterType" onchange="filterShop()">
+                        <option value="">All Wine Types</option>
+                    </select>
+                    
+                    <select id="filterVariety" onchange="filterShop()">
+                        <option value="">All Grape Varieties</option>
+                    </select>
+                </div>
             </div>
         </div>
 
-        <div id="wineGrid" class="wine-grid"></div>
+        <div class="container">
+            <div id="wineGrid" class="wine-grid"></div>
+            
+            <div id="paginationControls" class="pagination" style="text-align: center; margin-top: 20px; display: flex; justify-content: center; gap: 10px;">
+            </div>
+        </div>
     </div>
 
     <div id="cartFooter" class="cart-footer" style="display: none;">

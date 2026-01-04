@@ -1,3 +1,4 @@
+<?php include '../api/auth_checker/auth_check.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,6 +10,27 @@
 <body>
     <div class="container">
         <h1>Finalize Payment & Status</h1>
+
+        <div class="shipping-section">
+            <h3>Shipping Information</h3>
+            <div class="form-group">
+                <label for="address">Street Address</label>
+                <input type="text" id="address" name="address" required placeholder="123 Wine St.">
+            </div>
+            <div class="form-group">
+                <label for="city">City</label>
+                <input type="text" id="city" name="city" required>
+            </div>
+            <div class="form-group">
+                <label for="postal_code">Postal Code</label>
+                <input type="text" id="postal_code" name="postal_code" required>
+            </div>
+            <div class="form-group">
+                <label for="country_name">Country</label>
+                <input type="text" id="country_name" name="country_name" required>
+            </div>
+        </div>
+        <hr>
         
         <div id="paymentSummary" class="order-summary-card">
             <h3>Order #<span id="displayOrderId">--</span></h3>

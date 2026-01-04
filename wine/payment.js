@@ -59,16 +59,27 @@ function processPayment() {
     const method = document.getElementById("payment_method_id").value;
     const provider = document.getElementById("payment_provider_id").value;
 
-    if (!method || !provider) {
-        alert("Please select all options.");
+    const address = document.getElementById("address").value;
+    const city = document.getElementById("city").value;
+    const postal_code = document.getElementById("postal_code").value;
+    const country = document.getElementById("country_name").value;
+
+    if (!method || !provider || !address || !city || !postal_code || !country) {
+        alert("Please fill in all shipping and payment fields.");
         return;
     }
 
     const paymentData = {
         order_id: localStorage.getItem("current_order_id"),
         payment_method: parseInt(method),
-        payment_provider: parseInt(provider)
-        // Do NOT send payment_status; server will decide it
+        payment_provider: parseInt(provider),
+        // Add shipping data to the payload
+        shipping: {
+            address: address,
+            city: city,
+            postal_code: postal_code,
+            country: country
+        }
     };
 
     fetch("../api/payment_api.php", {

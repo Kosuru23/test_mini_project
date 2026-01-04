@@ -41,7 +41,16 @@ class Utility {
     }
 
     public function getPaymentStatuses() {
-        $query = "SELECT status_id, status_name FROM payment_status ORDER BY status_name ASC";
+        // Explicitly order by status_id to ensure consistency between the DB and UI
+        $query = "SELECT status_id, status_name FROM payment_status ORDER BY status_id ASC"; 
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    
+    public function getOrderStatuses() {
+        // Explicitly order by status_id to ensure consistency between the DB and UI
+        $query = "SELECT status_id, status_name FROM order_status ORDER BY status_id ASC"; 
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);

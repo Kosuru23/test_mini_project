@@ -38,6 +38,29 @@ class Payment {
             $stmt3 = $this->conn->prepare("UPDATE orders SET order_status = ? WHERE order_id = ?");
             $stmt3->execute([$newOrderStatus, $orderId]);
 
+            // 5. Insert into Shipping Table
+            if (isset($data['shipping'])) {
+                $shipping = $data['shipping'];
+                $stmt4 = $this->conn->prepare("INSERT INTO shipping (order_id, address, city, postal_code, country, shipping_status) VALUES (?, ?, ?, ?, ?, ?)");
+                
+                $initialShippingStatus = ($newOrderStatus === 2) ? 'Preparing' : 'Awaiting Payment';
+                
+                $stmt4->execute([
+                    $orderId, 
+                    $shipping['address'], 
+                    $shipping['city'], 
+                    $shipping['postal_code'], 
+                    $shipping['country'],
+                    $initialShippingStatus
+                ]);
+
+                $shippingId = $this->conn->lastInsertId(); 
+                
+                // Execute the procedure
+                $stmt5 = $this->conn->prepare("CALL assign_tracking_number(?)");
+                $stmt5->execute([$shippingId]);
+            }
+
             $this->conn->commit();
             return ["status" => "success"];
         } catch (Exception $e) {
