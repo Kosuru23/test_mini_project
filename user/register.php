@@ -24,28 +24,53 @@ if (isset($_SESSION['user_id'])) {
 <head>
     <meta charset="UTF-8">
     <title>Register - MIS</title>
-    <link rel="stylesheet" href="../style/style.css">
+    <link rel="stylesheet" href="../style/auth-style.css">
     <style>
-        .auth-container { max-width: 400px; margin: 50px auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .auth-container input, .auth-container select { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ddd; border-radius: 4px; }
-        .auth-btn { width: 100%; padding: 12px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .auth-container { max-width: 550px; } /* Slightly wider for registration */
     </style>
 </head>
 <body>
     <div class="auth-container">
         <h2>Create Account</h2>
+        <p class="subtitle">Join and order wine in our system today.</p>
+        
         <form id="registerForm">
-            <input type="text" id="first_name" placeholder="First Name" required>
-            <input type="text" id="middle_name" placeholder="Middle Initial"> 
-            <input type="text" id="last_name" placeholder="Last Name" required>
-            <input type="email" id="email" placeholder="Email Address" required>
-            <input type="text" id="phone_number" placeholder="Phone Number"> 
-            <input type="password" id="password" placeholder="Password" required>
-            <input type="password" id="confirm_password" placeholder="Confirm Password" required>
+            <div class="form-group">
+                <label>Full Name</label>
+                <div class="name-grid">
+                    <input type="text" id="first_name" placeholder="First" required>
+                    <input type="text" id="middle_name" placeholder="M.I.">
+                    <input type="text" id="last_name" placeholder="Last" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="text" id="phone_number" placeholder="+63 000 000 0000">
+            </div>
+
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <div>
+                    <label for="confirm_password">Confirm Password</label>
+                    <input type="password" id="confirm_password" placeholder="••••••••" required>
+                </div>
+            </div>
             
-            <button type="button" class="auth-btn" onclick="submitRegistration()">Register</button>
+            <button type="button" class="auth-btn register-btn" onclick="submitRegistration()">Complete Registration</button>
         </form>
-        <p>Already have an account? <a href="login.php">Login here</a></p>
+        
+        <div class="auth-footer">
+            Already have an account? <a href="login.php">Login here</a>
+        </div>
     </div>
 
     <script src="auth.js"></script>
