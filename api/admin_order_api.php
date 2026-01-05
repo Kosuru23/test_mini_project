@@ -39,19 +39,27 @@ switch ($method) {
         $data = json_decode(file_get_contents("php://input"), true);
         $order_id = isset($data['order_id']) ? (int)$data['order_id'] : 0;
         
-        $success = true;
-
         if ($order_id > 0) {
-            // Update Order Status if provided
-            if (isset($data['status_id'])) {
-                $success = $success && $order->updateOrderStatus($order_id, $data['status_id']);
-            }
-            // Update Payment Status if provided
-            if (isset($data['payment_status_id'])) {
-                $success = $success && $order->updatePaymentStatus($order_id, $data['payment_status_id']);
-            }
+            try {
+                $db->beginTransaction(); // Ensures both updates happen or none do
 
-            echo json_encode(["status" => $success ? "success" : "error"]);
+                // 1. Update Order Status
+                if (isset($data['status_id']) && $data['status_id'] !== "") {
+                    $order->updateOrderStatus($order_id, (int)$data['status_id']);
+                }
+
+                // 2. Update Payment Status
+                if (isset($data['payment_status_id']) && $data['payment_status_id'] !== "") {
+                    $order->updatePaymentStatus($order_id, (int)$data['payment_status_id']);
+                }
+
+                $db->commit();
+                echo json_encode(["status" => "success"]);
+            } catch (Exception $e) {
+                $db->rollBack();
+                // If the SQL trigger is the one failing, you will see the error here
+                echo json_encode(["status" => "error", "message" => $e->getMessage()]);
+            }
         } else {
             echo json_encode(["status" => "error", "message" => "Invalid Order ID"]);
         }

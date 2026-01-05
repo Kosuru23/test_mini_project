@@ -1,63 +1,102 @@
+let allOrders = [];
+let filteredOrders = [];
+let currentPage = 1;
+const recordsPerPage = 10;
+
 document.addEventListener("DOMContentLoaded", () => {
     loadStatusDropdowns();
     loadAdminOrders();
-});
+})
 
 function loadAdminOrders() {
     fetch("../api/admin_order_api.php")
     .then(response => response.json())
     .then(data => {
-        const tableBody = document.getElementById("orderTableBody");
-        if (!tableBody) return;
-
-        tableBody.innerHTML = "";
         if (data.status === "success") {
-            data.orders.forEach((order, index) => {
-                const date = new Date(order.created_at).toLocaleDateString();
-                // Use the correct alias from your PHP SQL
-                const statusClass = getStatusClass(order.order_status_name);
-                
-                tableBody.innerHTML += `
-                <tr>
-                    <td>${index + 1}</td>
-                    <td><strong>${order.first_name} ${order.last_name}</strong></td>
-                    <td>$${parseFloat(order.total_amount).toFixed(2)}</td>
-                    <td><span class="status-pill ${statusClass}">${order.order_status_name}</span></td>
-                    <td><span class="status-pill">${order.payment_status_name || 'Unpaid'}</span></td>
-                    <td><code>${order.tracking_number || 'Pending'}</code></td>
-                    <td>${date}</td>
-                    <td class="actions">
-                        <button class="edit-btn" onclick="viewOrderDetails(
-                            ${order.order_id}, 
-                            ${order.order_status}, 
-                            ${order.payment_status || 0}
-                        )">View</button>
-                    </td>
-                </tr>`;
-            });
+            allOrders = data.orders;
+            filteredOrders = [...allOrders]; // Initially, filtered is same as all
+            displayOrders(1); 
         }
     });
+}
+
+function displayOrders(page) {
+    const tableBody = document.getElementById("orderTableBody");
+    if (!tableBody) return;
+
+    currentPage = page;
+    tableBody.innerHTML = "";
+
+    // Calculate start and end for slicing
+    const startIndex = (page - 1) * recordsPerPage;
+    const endIndex = startIndex + recordsPerPage;
+    const paginatedItems = filteredOrders.slice(startIndex, endIndex);
+
+    paginatedItems.forEach((order, index) => {
+        const date = new Date(order.created_at).toLocaleDateString();
+        const statusClass = getStatusClass(order.order_status_name);
+        const rowNumber = startIndex + index + 1; // Correct numbering across pages
+
+        tableBody.innerHTML += `
+        <tr>
+            <td>${rowNumber}</td>
+            <td><strong>${order.first_name} ${order.middle_name}, ${order.last_name}</strong></td>
+            <td>$${parseFloat(order.total_amount).toFixed(2)}</td>
+            <td><span class="status-pill ${statusClass}">${order.order_status_name}</span></td>
+            <td><span class="status-pill">${order.payment_status_name || 'Unpaid'}</span></td>
+            <td><code>${order.tracking_number || 'Pending'}</code></td>
+            <td>${date}</td>
+            <td class="actions">
+                <button class="edit-btn" onclick="viewOrderDetails(
+                    ${order.order_id}, 
+                    ${order.order_status}, 
+                    ${order.payment_status || 0}
+                )">View</button>
+            </td>
+        </tr>`;
+    });
+
+    renderPagination();
+}
+
+function renderPagination() {
+    const paginationContainer = document.getElementById("pagination");
+    const totalPages = Math.ceil(filteredOrders.length / recordsPerPage);
+    
+    let html = "";
+    if (totalPages > 1) {
+        // Previous Button
+        html += `<button onclick="displayOrders(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>&laquo; Prev</button>`;
+
+        // Page Numbers
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<button class="${i === currentPage ? 'active' : ''}" onclick="displayOrders(${i})">${i}</button>`;
+        }
+
+        // Next Button
+        html += `<button onclick="displayOrders(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next &raquo;</button>`;
+    }
+    paginationContainer.innerHTML = html;
 }
 
 function filterOrders() {
     const nameSearch = document.getElementById("orderSearchBox").value.toUpperCase();
     const orderFilter = document.getElementById("orderFilterStatus").value.toUpperCase();
     const paymentFilter = document.getElementById("paymentFilterStatus").value.toUpperCase();
-    
-    const rows = document.querySelector("#orderTableBody").getElementsByTagName("tr");
 
-    for (let i = 0; i < rows.length; i++) {
-        // Name is cell 1, Order Status is cell 3, Payment Status is cell 4
-        const nameText = rows[i].cells[1].textContent.toUpperCase();
-        const orderText = rows[i].cells[3].textContent.toUpperCase();
-        const paymentText = rows[i].cells[4].textContent.toUpperCase();
+    filteredOrders = allOrders.filter(order => {
+        const fullName = `${order.first_name} ${order.middle_name} ${order.last_name}`.toUpperCase();
+        const orderStatus = (order.order_status_name || "").toUpperCase();
+        const paymentStatus = (order.payment_status_name || "UNPAID").toUpperCase();
 
-        const matchesName = nameText.indexOf(nameSearch) > -1;
-        const matchesOrder = orderFilter === "" || orderText.includes(orderFilter);
-        const matchesPayment = paymentFilter === "" || paymentText.includes(paymentFilter);
+        const matchesName = fullName.includes(nameSearch);
+        const matchesOrder = orderFilter === "" || orderStatus.includes(orderFilter);
+        const matchesPayment = paymentFilter === "" || paymentStatus.includes(paymentFilter);
 
-        rows[i].style.display = (matchesName && matchesOrder && matchesPayment) ? "" : "none";
-    }
+        return matchesName && matchesOrder && matchesPayment;
+    });
+
+    displayOrders(1);
 }
 
 function getStatusClass(status) {
@@ -120,6 +159,12 @@ function submitStatusUpdate() {
     const statusId = document.getElementById("updateStatusDropdown").value;
     const paymentStatusId = document.getElementById("updatePaymentStatusDropdown").value;
     
+    // Safety check: don't send if payment dropdown is empty unless intended
+    if (!paymentStatusId) {
+        alert("Please select a valid payment status.");
+        return;
+    }
+
     fetch("../api/admin_order_api.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -132,11 +177,14 @@ function submitStatusUpdate() {
     .then(res => res.json())
     .then(data => {
         if (data.status === "success") {
-            alert("Statuses updated successfully!");
+            alert("All statuses updated successfully!");
             closeDetailsModal();
-            loadAdminOrders();
+            loadAdminOrders(); // This refreshes allOrders and filteredOrders
+        } else {
+            alert("Update Failed: " + data.message);
         }
-    });
+    })
+    .catch(err => console.error("Error:", err));
 }
 
 function closeDetailsModal() {

@@ -103,7 +103,7 @@ class Order {
 
     public function getAllOrdersAdmin() {
         $sql = "SELECT o.order_id, o.total_amount, o.created_at, o.order_status, p.payment_status,
-                    u.first_name, u.last_name, 
+                    u.first_name, u.last_name, u.middle_name,
                     os.status_name AS order_status_name, 
                     ps.status_name AS payment_status_name,
                     sh.address, sh.city, sh.tracking_number 
@@ -114,8 +114,8 @@ class Order {
                 LEFT JOIN payment_status ps ON p.payment_status = ps.status_id
                 LEFT JOIN shipping sh ON o.order_id = sh.order_id 
                 WHERE sh.tracking_number IS NOT NULL
-                ORDER BY o.created_at DESC"; // Removed the tracking_number restriction
-        
+                ORDER BY o.created_at DESC"; 
+
         $stmt = $this->conn->prepare($sql);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -144,13 +144,25 @@ class Order {
     }
 
     public function updatePaymentStatus($order_id, $payment_status_id) {
-    try {
-        $sql = "UPDATE payments SET payment_status = ? WHERE order_id = ?";
-        $stmt = $this->conn->prepare($sql);
-        return $stmt->execute([(int)$payment_status_id, (int)$order_id]);
-    } catch (Exception $e) {
-        return false;
+        try {
+            // We use unique parameter names (:oid, :psid, :psid_upd) 
+            // to prevent the driver from confusing them.
+            $sql = "INSERT INTO payments (order_id, payment_status, paid_at) 
+                    VALUES (:oid, :psid, NOW()) 
+                    ON DUPLICATE KEY UPDATE payment_status = :psid_upd";
+            
+            $stmt = $this->conn->prepare($sql);
+            
+            // Explicitly bind as integers
+            $stmt->bindValue(':oid', (int)$order_id, PDO::PARAM_INT);
+            $stmt->bindValue(':psid', (int)$payment_status_id, PDO::PARAM_INT);
+            $stmt->bindValue(':psid_upd', (int)$payment_status_id, PDO::PARAM_INT);
+            
+            return $stmt->execute();
+        } catch (Exception $e) {
+            // This will capture the exact error if a stock trigger fails
+            throw new Exception("Payment SQL Error: " . $e->getMessage());
+        }
     }
-}
 }
 ?>

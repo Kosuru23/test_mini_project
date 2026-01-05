@@ -29,7 +29,7 @@
             </div>
         </div>
 
-        <table>
+    <table>
             <thead>
                 <tr>
                     <th>No.</th>
@@ -44,6 +44,8 @@
             </thead>
             <tbody id="orderTableBody"></tbody>
         </table>
+
+        <div id="pagination" class="pagination-container"></div>
     </div>
 
     <div id="detailsModal" class="modal">
